@@ -1,0 +1,65 @@
+/** Put this in the src folder **/
+
+#include "lcdi2c.h"
+extern I2C_HandleTypeDef hi2c1;
+
+void lcd_send_cmd (char cmd)
+{
+    char data_upper, data_lower;
+	uint8_t data_value[4];
+	data_upper = (cmd&0xf0);
+	data_lower = ((cmd<<4)&0xf0);
+	data_value[0] = data_upper|0x0C;  //E = 1, RS = 0
+	data_value[1] = data_upper|0x08;  //E = 0, RS = 0
+	data_value[2] = data_lower|0x0C;  //E = 1, RS = 0
+	data_value[3] = data_lower|0x08;  //E = 0, RS = 0
+	HAL_I2C_Master_Transmit (&hi2c1, 0x4E,(uint8_t *) data_value, 4, 100);
+}
+
+void lcd_send_data (char data)
+{
+	char data_upper, data_lower;
+	uint8_t data_value[4];
+	data_upper = (data&0xf0);
+	data_lower = ((data<<4)&0xf0);
+	data_value[0] = data_upper|0x0D;  //E = 1, RS = 0
+	data_value[1] = data_upper|0x09;  //E = 0, RS = 0
+	data_value[2] = data_lower|0x0D;  //E = 1, RS = 0
+	data_value[3] = data_lower|0x09;  //E = 0, RS = 0
+	HAL_I2C_Master_Transmit (&hi2c1, 0x4E,(uint8_t *) data_value, 4, 100);
+}
+
+
+void lcd_Init (void)
+{
+
+	lcd_send_cmd (0x28);
+	HAL_Delay(1);
+	lcd_send_cmd (0x08);
+	HAL_Delay(1);
+	lcd_send_cmd (0x01);
+	HAL_Delay(1);
+	lcd_send_cmd (0x06);
+	HAL_Delay(1);
+	lcd_send_cmd (0x0C);
+}
+
+void lcd_send_string (char *str)
+{
+	while (*str) lcd_send_data (*str++);
+}
+
+/* ************************************************************************ */
+
+
+
+#include "stm32f4xx_hal.h"
+
+void lcd_Init (void);
+
+void lcd_send_cmd (char cmd);
+
+void lcd_send_data (char data);
+
+void lcd_send_string (char *str);
+
